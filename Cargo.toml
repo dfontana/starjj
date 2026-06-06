@@ -1,0 +1,15 @@
+[package]
+name = "starjj"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+jj-lib = "0.42"
+jj-cli = "0.42"
+clap = { version = "4", features = ["derive"] }
+
+[profile.release]
+# Prompt-line tool: favour a small, fast binary.
+lto = true
+codegen-units = 1
+strip = true
