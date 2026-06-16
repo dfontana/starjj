@@ -47,10 +47,9 @@ jobs:
         if: matrix.musl
         run: |
           bin="target/${{ matrix.target }}/release/starjj"
-          file "$bin"
-          out=$(ldd "$bin" 2>&1)
+          out=$(file "$bin")
           echo "$out"
-          echo "$out" | grep -qE "statically linked|not a dynamic executable" \
+          echo "$out" | grep -qE "statically linked|static-pie linked" \
             && echo "OK: binary is statically linked" \
             || { echo "FAIL: binary has dynamic dependencies"; exit 1; }
 
