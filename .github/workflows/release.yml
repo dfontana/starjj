@@ -48,7 +48,11 @@ jobs:
         run: |
           bin="target/${{ matrix.target }}/release/starjj"
           file "$bin"
-          ldd "$bin" && echo "WARN: binary is not fully static" || echo "OK: binary is statically linked"
+          out=$(ldd "$bin" 2>&1)
+          echo "$out"
+          echo "$out" | grep -qE "statically linked|not a dynamic executable" \
+            && echo "OK: binary is statically linked" \
+            || { echo "FAIL: binary has dynamic dependencies"; exit 1; }
 
       - name: Package
         shell: bash
