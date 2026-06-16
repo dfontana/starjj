@@ -17,13 +17,19 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
+            target: x86_64-unknown-linux-musl
+            musl: true
           - os: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-gnu
+            target: aarch64-unknown-linux-musl
+            musl: true
           - os: macos-14
             target: aarch64-apple-darwin
     steps:
       - uses: actions/checkout@v6
+
+      - name: Install musl tools
+        if: matrix.musl
+        run: sudo apt-get install -y musl-tools
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -36,6 +42,16 @@ jobs:
 
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Verify static linkage
+        if: matrix.musl
+        run: |
+          bin="target/${{ matrix.target }}/release/starjj"
+          out=$(file "$bin")
+          echo "$out"
+          echo "$out" | grep -qE "statically linked|static-pie linked" \
+            && echo "OK: binary is statically linked" \
+            || { echo "FAIL: binary has dynamic dependencies"; exit 1; }
 
       - name: Package
         shell: bash
